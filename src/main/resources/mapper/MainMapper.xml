@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.MainMapper">
+	
+	<select id="findAllLimit" parameterType="Integer" resultType="Limit">
+		select l.limitid, l.limitname , l.limiturl , l.parentid from `limit` l 
+		left join limitrole lr on l.limitid = lr.limitid 
+		left join role r on r.roleid = lr.roleid 
+		left join emprole ep on r.roleid = ep.roleid 
+		left join employee e on e.empid = ep.empid
+		where l.ismenu = 1 and e.empid = #{empid};
+	</select>
+	
+</mapper>

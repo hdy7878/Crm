@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.EmproleMapper">
+	<resultMap id="EmproleResult" type="Emprole">
+		<id column="id" property="id" />
+		<association property="emp" javaType="Employee">
+			<id column="empid" property="empid" />
+			<result column="ename" property="ename" />
+		</association>
+		<association property="role" javaType="Role">
+			<id column="roleid" property="roleid" />
+			<result column="rolename" property="rolename" />
+		</association>
+	</resultMap>
+	<!--查询员工角色 -->
+	<select id="selectAllEmprole" resultMap="EmproleResult">
+		select er.*,emp.ename,r.* from emprole er,employee emp,role r where
+		er.empid=emp.empid and er.roleid=r.roleid
+	</select>
+	<!--增加员工的角色信息 -->
+	<insert id="insertEmprole" parameterType="Emprole">
+		<selectKey keyColumn="id" keyProperty="id" resultType="Integer"
+			order="AFTER">
+			select last_insert_id()
+		</selectKey>
+		insert into emprole(empid,roleid) values(#{emp.empid},#{role.roleid})
+	</insert>
+	<!--删除员工角色 -->
+	<delete id="subEmprole" parameterType="Integer">
+		delete from emprole where empid = #{emp.empid}
+	</delete>
+	<!--修改员工角色，可能升职了，因为没有比主管高的，暂定主管可以给专员升职 -->
+	<update id="updateEmprole" parameterType="Emprole">
+		update emprole set roleid=#{role.roleid} where empid=#{emp.empid}
+	</update>
+	
+	<!--查询员工角色 -->
+	<select id="selectRoleid" parameterType="Integer" resultMap="EmproleResult">
+		select * from emprole where empid = #{empid}
+	</select>
+	<!--根据id查员工角色信息-->
+	<select id="selectEmproleById" parameterType="Integer" resultMap="EmproleResult">
+		select er.*,emp.ename,r.rolename from emprole er,employee emp,role r where er.empid=emp.empid and er.roleid =r.roleid and id=#{id}
+	</select>
+	<!--查超管外的所有员工角色-->
+	<select id="selectEmproleForAdmin" parameterType="Integer" resultMap="EmproleResult">
+		select er.*,emp.ename,r.rolename from emprole er,employee emp,role r where emp.empid=er.empid and er.roleid=r.roleid and r.roleid !=3
+	</select>
+	
+</mapper>

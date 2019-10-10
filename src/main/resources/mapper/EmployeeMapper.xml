@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.EmployeeMapper">
+    <!--新增一个员工,包括两种角色....且立马得到其id-->
+    <insert id="insertEmployee" parameterType="Employee">
+        <selectKey keyColumn="empid" keyProperty="empid" resultType="Integer" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        insert into employee(username,password,tel,ename,email,salt) values(#{username},#{password},#{tel},#{ename},#{email},#{salt})
+    </insert>
+
+   <!--删除一个员工-->
+    <delete id="subEmployee" parameterType="Integer">
+        delete from employee where empid = #{empid}
+    </delete>
+    <!--修改一个员工信息-->
+    <update id="updateEmployee" parameterType="Employee">
+        update employee set username = #{username},password = #{password},tel = #{tel},ename = #{ename},email = #{email} where empid = #{empid}
+    </update>
+<!--根据id查询员工-->
+    <select id="selectEmployeeById" parameterType="Integer" resultType="Employee">
+        select * from employee where empid=#{empid}
+    </select>
+    <!--查询所有员工-->
+    <select id="selectAllEmployee" resultType="Employee">
+        select * from employee
+    </select>
+    <!--登录时查询-->
+    <select id="selectEmployeeByLogin" parameterType="Employee" resultType="Employee">
+        select * from employee where username=#{username} and password=#{password}
+    </select>
+    <!--注册时验证重名-->
+    <select id="selectEmployeeByUsername" parameterType="Employee" resultType="Employee">
+        select * from employee where username=#{username}
+    </select>
+    <!--查询所有专员-->
+    <select id="selectEmpFor2" parameterType="Integer" resultType="Employee">
+        select * from employee emp,emprole er where emp.empid=er.empid and er.roleid=#{roleid}
+    </select>
+
+    <select id="selectCusshareByEmpid" parameterType="Integer" resultType="Customershare">
+		select * from customershare where empid = #{empid}
+	</select>
+
+    <select id="selectCusvisitByEmpid" parameterType="Integer" resultType="Customervisit">
+		select * from customervisit where empid = #{empid}
+	</select>
+
+    <select id="selectEmproleByEmpid" parameterType="Integer" resultType="Emprole">
+        select * from  emprole where empid=#{empid}
+    </select>
+    <!--改密码-->
+<update id="updatePassword" parameterType="Employee">
+    update employee set password=#{password},salt=#{salt} where empid=#{empid}
+</update>
+    <!--用用户名查询员工-->
+    <select id="selectEmployee" parameterType="String" resultType="Employee">
+        select * from employee where username=#{username}
+    </select>
+<!--查询所有主管和专员-->
+    <select id="selectEmployeeForAdmin" parameterType="Integer" resultType="Employee">
+        SELECT * from employee emp,emprole er where emp.empid=er.empid and er.roleid!=3
+    </select>
+    <!--模糊查找所有专员和主管 -->
+    <select id="findAllEmployeeByename" parameterType="String" resultType="Employee">
+        select emp.* from employee emp,emprole er where emp.empid=er.empid and er.roleid!=3
+        <if test="ename != null and ename !=''">
+            and ename like CONCAT('%',#{ename},'%')
+        </if>
+    </select>
+    <!--模糊查询所有专员-->
+    <select id="findEmployeeFor2" parameterType="String" resultType="Employee">
+        select emp.* from employee emp,emprole er where emp.empid=er.empid and er.roleid=2
+        <if test="ename !=null and ename !=''">
+            and ename like CONCAT('%',#{ename},'%')
+        </if>
+    </select>
+</mapper>

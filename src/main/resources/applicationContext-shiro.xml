@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<!--先配置cookie-->
+	<bean name="cookie" class="org.apache.shiro.web.servlet.SimpleCookie" >
+		<constructor-arg value="rememberMe"></constructor-arg>
+		<property name="maxAge" value="3600"></property>
+ 	</bean>
+	<!--记住我的配置-->
+   <bean name="rememberMeManager" class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+     <property name="cookie" ref="cookie"></property>
+   </bean>
+	<!-- 创建一个realm -->
+	<bean id="realm" class="shiro.MyRealm">
+		<property name="credentialsMatcher" >
+			<bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+				<property name="hashAlgorithmName" value="MD5"></property>
+				<property name="hashIterations" value="3"></property>
+			</bean>
+		</property>
+	</bean>
+	<!-- 获取一个SecurityManager注册安全管理器 -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<!-- 必须关联realm -->
+		<property name="realm" ref="realm"/>
+		<property name="rememberMeManager" ref="rememberMeManager"></property>
+	</bean>
+	
+	<bean id="roleOrFilter" class="shiro.MyRolesAuthorizationFilter" />
+
+	<!-- Shiro整合Spring -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<!-- 必须关联SecurityManager -->
+		<property name="securityManager" ref="securityManager" />
+		<property name="loginUrl" value="toLogin.action"/>
+		
+		<!-- 配置unauthorizedUrl页面：未授权提示页面 -->
+		<property name="unauthorizedUrl" value="noAuthor.jsp"/>
+		<property name="filters">  
+            <map>    
+                 <entry key="roleOrFilter" value-ref="roleOrFilter"/>
+            </map> 
+        </property>
+
+		<!-- /** = authc -->
+		<!-- 使用Shiro的内置过滤器 -->
+		<property name="filterChainDefinitions">
+			<value>
+				/css/**=anon
+				/img/**=anon
+				/js/**=anon
+				/javascript/**=anon
+				
+				/login.action=anon
+				/toLogin.action=anon
+				/login.jsp=anon
+				/regist.action=anon
+				
+				<!-- zhuguan，zhuanyuan，admin -->
+				
+				<!-- 主页面  -->
+				/toMain.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				
+				<!-- 员工角色管理页面 -->
+				/ShowAllEmprole.action = roleOrFilter["admin"]
+				/UpdateEmprole.action = roleOrFilter["admin"]
+				/UpdateEmpRoleHou.action = roleOrFilter["admin"]
+				
+				
+				<!-- 员工管理页面 -->
+				/ShowAllEmployee.action = roleOrFilter["admin,zhuguan"]
+				/ShowEmpPage.action = roleOrFilter["admin,zhuguan"]
+				/toAddEmp.action = roleOrFilter["admin,zhuguan"]
+				<!-- 员工管理页面功能 删、查、改、加、员工名字验证 -->
+				/DeleteEmployee.action = roleOrFilter["admin,zhuguan"]
+				/UpdateEmployeeById.action = roleOrFilter["admin,zhuguan"]
+				/UpdateEmployee.action = roleOrFilter["admin,zhuguan"]
+				/InsertEmployee.action = roleOrFilter["admin,zhuguan"]
+				/Checkusername.action = roleOrFilter["admin,zhuguan"]
+				
+				<!-- 客户管理页面 -->
+				/ShowAllCustomer1.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/ShowCusPage.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/toAddCus.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				<!-- 客户管理页面功能 删、查、改、加  -->
+				/SubCustomer.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/UpdateCustomerById.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/UpdateCustomer.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/InsertCustomer.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+					
+				<!-- 访问记录页面 -->
+				/ShowAllCustomervisit.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/ShowCVPage.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/toAddCustomervisit.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				<!-- 访问记录功能 删、查、改、加  -->
+				/SubCustomervisit.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/UpdateCustomervisit.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/UpdateCusVisit.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/AddCustomervisit.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				
+				<!-- 共享记录页面 -->
+				/ShowAllCustomershare.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/ShowCSPage.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/toAddCustomershare.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				<!-- 共享记录功能 删、查、改、加  -->
+				/SubCustomershare.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/UpdateCustomershare.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/UpdateCusShare.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/AddCustomershare.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				
+				
+				<!-- 信息管理页面 -->
+				/toMessage.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/ShowEmployeeByEmpId.action = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				<!-- 信息管理页面功能 验证、改密码、查个人信息、改个人信息  -->
+				/CheckOldPassWord = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/ChangeMessage = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/UpdateEmployeeById = roleOrFilter["admin,zhuguan,zhuanyuan"]
+				/UpdateEmployee = roleOrFilter["admin,zhuguan,zhuanyuan"]
+							
+				
+			</value>
+		</property>
+		<!--
+			authc的作用：
+				判断当前用户是否已经登录
+				1）如果已经登录，则直接可以访问该请求index.jsp
+				2）如果没有登录，跳转到默认login.jsp
+			perms[area]的作用：
+				判断当前用户是否拥护area权限
+				1）有，则直接访问该资源
+				2）没有，则返回401,重定向到unauthorizedUrl(如果unauthorizedUrl没有配置，则看不见)
+
+			*: 一级目录
+			** ：任意级目录
+		 -->
+
+	</bean>
+
+
+</beans>

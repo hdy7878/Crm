@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.CustomervisitMapper">
+    <resultMap type="Customervisit" id="CustomervisitResult" >
+        <id column="id" property="id"/>
+        <result column="content" property="content"/>
+        <result column="date" property="date"/>
+        <association property="cus" javaType="Customer">
+            <id column="cid" property="cid"/>
+            <result column="cusname" property="cusname"/>
+        </association>
+
+        <association property="emp" javaType="Employee">
+            <id column="empid" property="empid"/>
+            <result column="ename" property="ename"/>
+        </association>
+    </resultMap>
+    <!--增加一个访问记录-->
+    <insert id="insertCustomervisit" parameterType="Customervisit">
+        <selectKey keyColumn="id" keyProperty="id" resultType="Integer" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        insert into customervisit(cid,empid,content,date) values(#{cus.cid},#{emp.empid},#{content},#{date})
+    </insert>
+    <!--删除一个访问记录-->
+    <delete id="subCustomervisit" parameterType="Integer">
+        delete from customervisit where id = #{id}
+    </delete>
+    <!--修改一个访问记录-->
+    <update id="updateCustomervisit" parameterType="Customervisit">
+        update customervisit set cid = #{cus.cid},empid= #{emp.empid},content = #{content},date = #{date} where id = #{id}
+    </update>
+    <!--查找访问记录-->
+    <select id="selectAllCustomervisit" resultMap="CustomervisitResult">
+       select cv.*,cus.cusname,emp.ename from customervisit cv,customer cus,employee emp where cv.cid=cus.cid and cv.empid=emp.empid
+    </select>
+    <!--根据id查询访问记录-->
+    <select id="selectCustomervisit" resultMap="CustomervisitResult">
+        select * from customervisit where id=#{id}
+    </select>
+    <!--查询自己的访问记录-->
+    <select id="selectCustomervisitById" parameterType="Integer" resultMap="CustomervisitResult">
+        select cv.*,c.cusname,emp.ename from customer c , customervisit cv , employee emp where c.cid = cv.cid and cv.empid=emp.empid and cv.empid = #{empid}
+    </select>
+
+    <!--通过模糊查询所有的访问记录-->
+    <select id="findAllCustomervisitBycusname" parameterType="String" resultMap="CustomervisitResult">
+        select cv.*,cus.cusname,emp.ename from customervisit cv,customer cus,employee emp where cv.cid =cus.cid and cv.empid=emp.empid
+        <if test="cusname!=null and cusname!=''">
+            and cus.cusname like CONCAT('%',#{cusname},'%')
+        </if>
+    </select>
+    <!--通过模糊查询专员自己下面的访问记录-->
+    <select id="findAllCustomervisitByIdcusname" parameterType="String" resultMap="CustomervisitResult">
+        select cv.*,cus.cusname,emp.ename from customervisit cv,customer cus,employee emp where cv.cid =cus.cid and cv.empid=emp.empid and cv.empid=#{empid}
+        <if test="cusname!=null and cusname!=''">
+            and cus.cusname like CONCAT('%',#{cusname},'%')
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.CustomerMapper">
+    <!--新增一个顾客....且立马得到其id -->
+    <insert id="insertCustomer" parameterType="Customer">
+        <selectKey keyColumn="cid" keyProperty="cid" resultType="Integer"
+                   order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        insert into customer(cusname,address,contact,tel,email)
+        values(#{cusname},#{address},#{contact},#{tel},#{email})
+    </insert>
+    <!--删除一个顾客 -->
+    <delete id="subCustomer" parameterType="Integer" flushCache="true">
+		delete from customer where cid = #{cid}
+	</delete>
+    <!--修改顾客 -->
+    <update id="updateCustomer" parameterType="Customer">
+		update customer set cusname = #{cusname},address = #{address},contact =
+		#{contact},tel = #{tel},email = #{email} where cid = #{cid}
+	</update>
+
+    <!--查找所有顾客 -->
+    <select id="selectAllCustomer1" resultType="Customer">
+		select * from customer
+	</select>
+    <!--根据id查顾客 -->
+    <select id="selectCustomerById" parameterType="Integer" resultType="Customer">
+		select * from customer where cid=#{cid}
+	</select>
+
+    <!--查询属于与自己的客户-->
+    <select id="selectCusForEmp" parameterType="Integer" resultType="Customer">
+		select * from customer c , customershare cs where c.cid = cs.cid and cs.empid = #{empid}
+	</select>
+
+
+    <select id="findCusshareByCid" parameterType="Integer" resultType="Customershare">
+		select * from customershare where cid = #{cid}
+	</select>
+
+    <select id="findCusvisitByCid" parameterType="Integer" resultType="Customervisit">
+		select * from customervisit where cid = #{cid}
+	</select>
+
+    <!--查找所有客户 -->
+    <select id="findAllCustomerByCusname" parameterType="String" resultType="Customer">
+        select * from customer
+        <if test="cusname != null and cusname !=''">
+            where cusname like CONCAT('%',#{cusname},'%')
+        </if>
+    </select>
+
+    <!--查询属于与自己的客户-->
+    <select id="findCusForEmpCusname" parameterType="String" resultType="Customer">
+        select * from customer c , customershare cs where c.cid = cs.cid and cs.empid = #{empid}
+        <if test="cusname != null and cusname !=''">
+            and cusname like CONCAT('%',#{cusname},'%')
+        </if>
+    </select>
+
+     <!--主管查询所有专员的客户-->
+    <select id="findCustomerByroleandemp" parameterType="Integer" resultType="Customer">
+        SELECT cus.*  from employee emp,emprole er,customer cus,customershare cs where emp.empid=er.empid and cus.cid=cs.cid and cs.empid=emp.empid and er.roleid=#{roleid} or emp.empid=#{empid} GROUP BY cus.cid
+    </select>
+    
+    
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.CustomershareMapper">
+    <resultMap type="Customershare" id="CustomershareResult" >
+        <id column="id" property="id"/>
+        <association property="cus" javaType="Customer">
+            <id column="cid" property="cid"/>
+            <result column="cusname" property="cusname"/>
+        </association>
+
+        <association property="emp" javaType="Employee">
+            <id column="empid" property="empid"/>
+            <result column="ename" property="ename"/>
+        </association>
+    </resultMap>
+    <!--新增一个顾客分享....且立马得到其id-->
+    <insert id="insertCustomershare" parameterType="Customershare">
+        <selectKey keyColumn="id" keyProperty="id" resultType="Integer" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        insert into customershare(cid,empid) values(#{cus.cid},#{emp.empid})
+    </insert>
+    <!--删除一个顾客分享-->
+    <delete id="subCustomershare" parameterType="Integer" flushCache="true">
+        delete from customershare where id=#{id}
+    </delete>
+    <!--修改一个顾客分享-->
+   <update id="updateCustomershare" parameterType="Customershare" >
+       update customershare set cid = #{cus.cid},empid= #{emp.empid} where id = #{id}
+   </update>
+    <select id="selectCustomershare"  resultMap="CustomershareResult">
+        select cs.*,cus.cusname,emp.ename from customershare cs,customer cus,employee emp where cs.cid=cus.cid and cs.empid=emp.empid
+    </select>
+    <select id="selectCustomershareById" resultMap="CustomershareResult">
+        select * from customershare where id= #{id}
+    </select>
+    <!--查询自己的共享-->
+    <select id="selectCustomershareByEmpId" parameterType="Integer" resultMap="CustomershareResult">
+        select cs.id,emp.ename,cus.cid,cus.cusname from customershare cs,employee emp, customer cus where cs.cid=cus.cid and cs.empid=emp.empid and cs.empid=#{empid}
+    </select>
+    
+    <select id="findCustomershareByTerm"  parameterType="Integer" resultType="Customershare" >
+       select * from customershare where empid = #{empid} and cid = #{cid}
+   </select>
+
+    <!--通过模糊查询所有的访问记录-->
+    <select id="findAllCustomershareBycusname" parameterType="String" resultMap="CustomershareResult">
+        select cs.*,cus.cusname,emp.ename from customershare cs,customer cus,employee emp where cs.cid =cus.cid and cs.empid=emp.empid
+        <if test="cusname!=null and cusname!=''">
+            and cus.cusname like CONCAT('%',#{cusname},'%')
+        </if>
+    </select>
+    <!--通过模糊查询专员自己下面的访问记录-->
+    <select id="findAllCustomershareByIdcusname" parameterType="String" resultMap="CustomershareResult">
+        select cs.*,cus.cusname,emp.ename from customershare cs,customer cus,employee emp where cs.cid =cus.cid and cs.empid=emp.empid and cs.empid=#{empid}
+        <if test="cusname!=null and cusname!=''">
+            and cus.cusname like CONCAT('%',#{cusname},'%')
+        </if>
+    </select>
+    
+</mapper>
